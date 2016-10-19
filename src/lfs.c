@@ -13,6 +13,7 @@
 **   lfs.lock_dir (path)
 **   lfs.mkdir (path)
 **   lfs.rmdir (path)
+**   lfs.unlink (path)
 **   lfs.setmode (filepath, mode)
 **   lfs.symlinkattributes (filepath [, attributename])
 **   lfs.touch (filepath [, atime [, mtime]])
@@ -463,6 +464,25 @@ static int remove_dir (lua_State *L) {
         int fail;
 
         fail = rmdir (path);
+
+        if (fail) {
+                lua_pushnil (L);
+                lua_pushfstring (L, "%s", strerror(errno));
+                return 2;
+        }
+        lua_pushboolean (L, 1);
+        return 1;
+}
+
+/*
+** Removes a file.
+** @param #1 File path.
+*/
+static int unlink_file (lua_State *L) {
+        const char *path = luaL_checkstring (L, 1);
+        int fail;
+
+        fail = unlink (path);
 
         if (fail) {
                 lua_pushnil (L);
@@ -927,6 +947,7 @@ static const struct luaL_Reg fslib[] = {
         {"lock", file_lock},
         {"mkdir", make_dir},
         {"rmdir", remove_dir},
+        {"unlink", unlink_file},
         {"symlinkattributes", link_info},
         {"setmode", lfs_f_setmode},
         {"touch", file_utime},
